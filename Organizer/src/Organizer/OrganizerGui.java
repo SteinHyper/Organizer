@@ -267,7 +267,7 @@ public class OrganizerGui extends Application{
 	if (vboxFiles.getChildren().size()== 0) {
 		index = 0;
 	}
-	else index =
+	else index = 0;
 		
 		if(hboxFileList.get(index).getChildren().size()== 6) {
 				index++;
@@ -322,9 +322,10 @@ public class OrganizerGui extends Application{
 			FileChooser chooserFile = new FileChooser();
 			chooserFile.setTitle("Save your Collection");
 		chooserFile.getExtensionFilters().addAll(vidoFilter);
-			if(chooserFile.getSelectedExtensionFilter()==vidoFilter) {
+			if(chooserFile.getSelectedExtensionFilter() == vidoFilter) {
+				System.out.println("video");
 				 imageFile = videoIcon;
-			};
+			}
 			File addedFile = chooserFile.showOpenDialog(primaryStage);
 			String fileName = addedFile.getName();
 			addFileToWindow(imageFile,fileName);	
