@@ -18,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -44,35 +45,55 @@ public class OrganizerGui extends Application{
 	private Labeled lblStatus;
 
 	private Button btnSaveCollection;
-	
-	private final ExtensionFilter vidoFilter = new  ExtensionFilter("Video File","*.mp4","*.M4P","*.M4V","*.mov","*.QT","*.ogg","*.WEBM","*.MPG",
+
+	private final ExtensionFilter videoFilter = new  ExtensionFilter("Video File","*.mp4","*.M4P","*.M4V","*.mov","*.QT",
+			"*.ogv","*.WEBM","*.MPG",
 			"*.MP2","*.MPEG","*.MPE","*.MPV","*.AVI"," *.WMV","*.FLV", "*.SWF","*.AVCHD");
-	private Image videoIcon = new Image("C:\\Users\\ToureRa\\Pictures\\Video_Icon.png");
-	private Image nullIcon = new Image("C:\\Users\\ToureRa\\Pictures\\Null_Icon.png");
+	private final ExtensionFilter textFilter = new  ExtensionFilter("Text File","*.txt","*.irf","*.irx","*.chm","*.djvu",
+			"*.DOC","*.DOCX","*.EPUB",
+			"*.pdb","*.fb2","*.xeb","*.ceb","*.htm"," *.ibooks","*.inf", "*.azw","*.azw3","*.kf8","*.kfx","*.lit",
+			"*.pkg","*.opf","*.pdf","*.pdb","*.rtf","*pdg","*.xml","*.oxps","*.xps");
+	private final ExtensionFilter pictureFilter = new  ExtensionFilter("Picture File","*.apng","*.avif","*.gif","*.jp",
+			"*.jpg", "*.jpeg", "*.jfif", "*.pjpeg", "*.pjp","*.png","*.svg","*.webp");
+	private final ExtensionFilter audioFilter = new  ExtensionFilter("Audio File","*.cda","*.8svx","*.wv","*.wma","*.wav",
+			"*.vox","*.voc","*.tta","*.rf64","*.raw","*.rm","*.ra","*.opus","*.oga","*.nmf","*.msv","*.mpc","*.mp3",
+			"*.movpkg","*.mmf","*.m4b","*.m4a","*.3gp","*.aa","*aac.","*.aax ","*.act","*.aiff","*.aiff","*.alac",
+			"*.amr ","*.ape","*.au","*.awb","*.dss","*.dvf ","*.flac","*.gsm ","*.iklax","*.ivs");
 
-	private ArrayList<HBox> hboxFileList = new ArrayList<HBox>();
+	private Image iconVideo = new Image("png/Video_Icon.png");
+	private Image iconNull = new Image("png/Null_Icon.png");
+	private Image iconAudio = new Image("png/Audio_Icon.png");
+	private Image iconPicture = new Image("png/Picture_Icon.png");
+	private Image iconText = new Image("png/Text_Icon.png");
 
-	private VBox vboxFiles;
-
-	
+	private ArrayList<VBox> vboxFileList = new ArrayList<VBox>();
 
 
+	private FileChooser chooserFile;
 
-	
-	
-	
+	private Image imageFile;
+
+	private FlowPane flowPane;
+
+
+
+
+
+
+
+
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
-		
+
 		BorderPane mainPane = new BorderPane();
 		//defineChoosenFont(selectedFont);
-		
+
 		//mainPane.setTop(buildTopPane());
 		mainPane.setCenter(buildCenterPane());
 		mainPane.setLeft(buildLeftPane());
 		//mainPane.setBottom(buildBottomPane());
-		
+
 		Scene scene = new Scene(mainPane);
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Organizer");
@@ -104,29 +125,29 @@ public class OrganizerGui extends Application{
 	private Node buildCenterPane() {
 		buttonBackground = (Rectangle)buildBackround();
 		filterBackground = (Rectangle)buildBackround();
-		
+
 		VBox centerPiece = new VBox();
-		
+
 		StackPane fileButtonSpace = new StackPane();
 		HBox fileButtons = new HBox();
 		fileButtons.setAlignment(Pos.CENTER_LEFT);
 		fileButtons.setSpacing(1);
 		Rectangle fileButtonBackground = buttonBackground;
 		fileButtonSpace.getChildren().addAll(fileButtonBackground,fileButtons);
-		
-		
+
+
 		Button btnLoadCollection = new Button("Load");
 		btnSaveCollection = new Button("Save");
 		Button btnAddFile = new Button("Add File");
-		
+
 		Button btnRemoveFile = new Button("Remove File");
 		fileButtons.getChildren().addAll(btnLoadCollection,btnSaveCollection,btnAddFile,btnRemoveFile);
-	
-		
+
+
 		VBox searchBarSpace = new VBox();
 		TextField searchBar = new TextField();
 		searchBarSpace.getChildren().addAll(searchBar);
-		
+
 		HBox inExClude = new HBox();
 		VBox includeSide = new VBox();
 		VBox excludeSide = new VBox();
@@ -141,7 +162,7 @@ public class OrganizerGui extends Application{
 		includeSide.getChildren().addAll(lblInclude,includePane);
 		excludeSide.getChildren().addAll(lblExclude,excludePane);
 		inExClude.getChildren().addAll(includeSide,excludeSide);
-		
+
 		HBox attributeBar = new HBox();
 		TextField searchAttribute = new TextField();
 		Button btnAZ = new Button("A-Z");
@@ -152,12 +173,12 @@ public class OrganizerGui extends Application{
 		filterPane.setAlignment(Pos.CENTER_LEFT);
 		attributeBar.getChildren().addAll(searchAttribute,btnAZ,btnType,btnFilter);
 		filterPane.getChildren().addAll(filterButtonBackground,attributeBar);
-		
+
 		VBox attributeSpace = new VBox();
 		ScrollPane attributeScroll = buildScrollPane();
 		attributeScroll.setPrefViewportHeight(350);
 		attributeSpace.getChildren().addAll(attributeScroll);
-		
+
 		centerPiece.getChildren().addAll(fileButtonSpace,searchBarSpace,inExClude,filterPane,attributeSpace);
 		btnAddFile.setOnAction(ev ->doLoadFileItem());
 		listenStageSize();
@@ -166,22 +187,11 @@ public class OrganizerGui extends Application{
 
 
 	private Node buildLeftPane() {
-		StackPane fileSpace = new StackPane();
-		fileSpace.setAlignment(Pos.TOP_LEFT);
-	    vboxFiles = new VBox();
-		HBox hboxFiles = new HBox();
-		hboxFileList.add(hboxFiles);
-		hboxFiles.setSpacing(3);
+		VBox vBoxFileBox= new VBox();
+		ScrollPane scrollPane = buildScrollPane();
 		Label lblFiles = new Label("File Items");
-		ScrollPane fileScrollArea = new ScrollPane(vboxFiles);
-		//fileScrollArea.setPrefViewportHeight(500);
-		//fileScrollArea.setPrefViewportWidth(500);
-		
-		
-		Rectangle fileBackground = new Rectangle();
-		fileBackground.setWidth(300);;
-		fileBackground.setFill(Color.AQUA);
-		
+
+
 		VBox add = new VBox();
 		Label addMore = new Label("Add More");
 		StackPane addFile = new StackPane();
@@ -198,12 +208,13 @@ public class OrganizerGui extends Application{
 		hPlus.setHeight(10);
 		hPlus.setWidth(40);
 		addFile.getChildren().addAll(addBackround,vPlus,hPlus);
-		
-		fileSpace.getChildren().addAll(fileBackground,fileScrollArea);
-		vboxFiles.getChildren().addAll(lblFiles, hboxFiles);
-		add.getChildren().addAll(addFile,addMore);
-		hboxFiles.getChildren().addAll(add);
-		return fileSpace;
+        
+
+		add.getChildren().addAll(addFile,addMore);      
+		vboxFileList.add(add);
+        vBoxFileBox.getChildren().addAll(lblFiles,scrollPane);
+		return  vBoxFileBox;
+				
 	}
 
 
@@ -211,7 +222,7 @@ public class OrganizerGui extends Application{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	private Node buildBackround() {
 		Rectangle backround = new Rectangle();
 		backround.setHeight(BUTTON_HEIGHT);
@@ -219,20 +230,20 @@ public class OrganizerGui extends Application{
 		backround.setFill(Color.CYAN);
 		return backround;
 	}
-	
+
 	private StackPane buildStackPane() {
 		StackPane nodeStack = new StackPane();
 		return nodeStack;
 	}
-	
+
 	private void resizeBackground() {
-		
-	
+
+
 		buttonBackground.setWidth(primaryStage.getWidth()*0.9);
 		filterBackground.setWidth(primaryStage.getWidth()*0.9);
 
 	}
-	
+
 	private void listenStageSize() {
 		primaryStage.widthProperty().addListener((obs, oldVal,newVal)->{
 			resizeBackground();
@@ -240,9 +251,9 @@ public class OrganizerGui extends Application{
 		primaryStage.heightProperty().addListener((obs, oldVal,newVal)->{
 			resizeBackground();
 		});
-		
+
 	}
-	
+
 	private int countHBoxContant(HBox buttonContainer) {
 		int count = 0;
 		for (Node childe : buttonContainer.getChildren() ) {
@@ -251,99 +262,157 @@ public class OrganizerGui extends Application{
 		return count;
 
 	}
-	
+
 	private ScrollPane buildScrollPane() {
-		HBox hBox = new HBox();
-		VBox vBox = new VBox(hBox);
-		
-		ScrollPane scrollPane = new ScrollPane(vBox);
-		vBox.setFocusTraversable(true);
+	    flowPane = new FlowPane();
+		flowPane.setVgap(8);
+		flowPane.setHgap(4);
+		flowPane.setPrefWrapLength(300); //preferred width = 300
+		ScrollPane scrollPane = new ScrollPane(flowPane);
 		scrollPane.setFitToWidth(true);
 		return scrollPane;
-	}
-	
-	private int switchSrollRow() {
-		int index;
-	if (vboxFiles.getChildren().size()== 0) {
-		index = 0;
-	}
-	else index = 0;
 		
-		if(hboxFileList.get(index).getChildren().size()== 6) {
-				index++;
-				hboxFileList.add(new HBox());
-				vboxFiles.getChildren().addAll(hboxFileList.get(index));
-				return index;
-			}
-		else return index;
-		}
-		
-	
+	}
+
+
+
 	private void addFileToWindow(Image icon,String name) {
 		VBox fileItem = new VBox();
 		ImageView fileIcon = new ImageView();
 		fileIcon.setImage(icon);
 		fileIcon.setFitHeight(50);
 		fileIcon.setFitWidth(50);
-		Label fileName = new Label("name");
+		Label fileName = new Label(name);
 		fileItem.getChildren().addAll(fileIcon,fileName);
 		fileItem.setAlignment(Pos.CENTER);
-		hboxFileList.get(switchSrollRow()).getChildren().add(fileItem);
-		
-		
+		v
+
+
 	}
-	
-	
+
+
 	private void switchDisableStateForSaveButtons(boolean state) {
 		btnSaveCollection.setDisable(state);
 	}
-	
-	
+
+
 	private void doFileNew() {
 		//taEditor.clear();
 		currentFile = null;
 		switchDisableStateForSaveButtons(true);
 	}
-	
-	
-	
+
+
+
 	private void doSaveFileAs() {
 		FileChooser chooserCollection = new FileChooser();
 		chooserCollection.setTitle("Save your Collection");
 		chooserCollection.getExtensionFilters().addAll(
-					new ExtensionFilter("Collection",".csv"));
+				new ExtensionFilter("Collection",".csv"));
 	}
-	
-	
-	
+
+
+
 	private void doLoadFileItem() {
-		if(nullIcon != null && videoIcon != null) {
-			Image imageFile = nullIcon;
-			FileChooser chooserFile = new FileChooser();
+		if(iconNull != null && iconVideo != null) {
+			imageFile = iconNull;
+			chooserFile = new FileChooser();
 			chooserFile.setTitle("Save your Collection");
-		chooserFile.getExtensionFilters().addAll(vidoFilter);
-			if(chooserFile.getSelectedExtensionFilter() == vidoFilter) {
-				System.out.println("video");
-				 imageFile = videoIcon;
-			}
+			chooserFile.getExtensionFilters().addAll(videoFilter,pictureFilter,audioFilter,textFilter);		
+
 			File addedFile = chooserFile.showOpenDialog(primaryStage);
+			pickIcon();
 			String fileName = addedFile.getName();
 			addFileToWindow(imageFile,fileName);	
 		}
-		
-		if(nullIcon==null) {
+
+		if(iconNull==null) {
 			Alert alertNullIcon = new Alert(AlertType.ERROR,"Warning Null_Icon.png is missing");
 			if(alertNullIcon.getResult() == ButtonType.OK) 
 				return;
-			
-			
-	if(videoIcon==null) {
-			Alert alertVideoIcon = new Alert(AlertType.ERROR,"Warning Null_Icon.png is missing");
+
+
+			if(iconVideo==null) {
+				Alert alertVideoIcon = new Alert(AlertType.ERROR,"Warning Null_Icon.png is missing");
 				if(alertVideoIcon.getResult() == ButtonType.OK) 
-				return;;
-			
-	}
-	}
+					return;			
+			}
 		}
+
+
+	}
+	
+	private void pickIcon() {
+		if(chooserFile.getSelectedExtensionFilter() == videoFilter) {
+			imageFile = iconVideo;
+		}
+		if(chooserFile.getSelectedExtensionFilter() == audioFilter) {
+			imageFile = iconAudio;
+		}
+		if(chooserFile.getSelectedExtensionFilter() == textFilter) {
+			imageFile = iconText;
+		}
+		if(chooserFile.getSelectedExtensionFilter() == pictureFilter) {
+			imageFile = iconPicture;
+		} 
+	}
+
+	private String getFileExtension(File file) {
+		String fileName = file.getName();
+		int lastIndexOf = fileName.lastIndexOf(".");
+		if (lastIndexOf == -1) {
+			return ""; //empty extension
+		}
+		return fileName.substring(lastIndexOf);
+
+	}
+
+	private String checkExtensionTyp(String extension) {
+		String[] videoArray = new String[] {".mp4",".M4P",".M4V",".mov",".QT",".ogv",".WEBM",".MPG",
+				".MP2",".MPEG",".MPE",".MPV",".AVI"," .WMV",".FLV", ".SWF",".AVCHD"};	
+		String[] textArray = new  String[]{".txt",".irf",".irx",".chm",".djvu",
+				".DOC",".DOCX",".EPUB",
+				".pdb",".fb2",".xeb",".ceb",".htm",".ibooks",".inf", ".azw",".azw3",".kf8","kfx","*.lit",
+				".pkg",".opf",".pdf",".pdb",".rtf","pdg",".xml",".oxps",".xps"};
+		String[] pictureArry = new String[]{".apng",".avif",".gif",".jp",
+				".jpg", ".jpeg", ".jfif", ".pjpeg", ".pjp",".png",".svg",".webp"};
+		String[] audioArray = new  String[]{"*.cda","*.8svx","*.wv","*.wma","*.wav",
+				".vox",".voc",".tta",".rf64",".raw",".rm",".ra",".opus",".oga",".nmf",".msv",".mpc",".mp3",
+				".movpkg","*.mmf",".m4b",".m4a",".3gp",".aa","*aac.",".aax ",".act",".aiff",".aiff",".alac",
+				".amr ",".ape",".au",".awb",".dss",".dvf ",".flac",".gsm ",".iklax",".ivs"};
+		//The File is a Video
+		if (containsStringArray(videoArray, extension)) {
+			String video = "video";
+			return video;
+		}
+		else if (containsStringArray(textArray, extension)) {
+			String text = "text";
+			return text;
+		}
+
+		else if (containsStringArray(pictureArry, extension)) {
+			String picture ="picture";
+			return picture;
+		}
+
+		else if (containsStringArray(audioArray, extension)) {
+			String audio = "audio";
+			return audio;
+		}
+		String none = "none";
+		return none;
+	}
+
+	private boolean containsStringArray(String[] array,String string) {
+		boolean contains = false;
+		for (String s : array) {
+			if( s== string) {
+				contains= true;
+				return contains;
+			}	
+		}
+		return contains;
+
+	}
 
 }
